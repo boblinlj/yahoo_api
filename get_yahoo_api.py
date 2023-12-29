@@ -76,11 +76,57 @@ class YaooOp(YahooAPI_to_JSON_file):
 
     name = 'yahooop'
     description = 'Yahoo options'
+    
+    def yahoo_url(self, **kwargs) -> str:
+        expiration_dt = kwargs.get('expiration_dt')
+        if expiration_dt is None: expiration_dt = ''
+        return f"https://query{random.choice(['1','2'])}.finance.yahoo.com/v7/finance/options/{self.stock}?date={expiration_dt}"
+    
+    def load_to_staging(self) -> None:
+        
+        # default expiration_dt_lst to be a list with one empty string, so that the first url has date= nothing
+        # in this case Yahoo will automatically fetch the first expiration date
+        expiration_dt_lst = ['']
+        _temp_lst = list()
+        i = 0
+        
+        while True:
+            url = self.yahoo_url(expiration_dt=expiration_dt_lst[i])
+            response = self.read_yahoo_api(url)
+            results_json = json.loads(response)
+            # extract expiration_dt_lst in the first extraction
+            if i == 0:
+                # check if stock is valid
+                try:
+                    expiration_dt_lst = results_json['optionChain']['result'][0]['expirationDates']
 
-    def yahoo_url(self) -> str:
-        return ''
+                except IndexError:
+                    logger.info(f"{self.stock} does not have {url}")
+                    return pd.DataFrame()
+            
+            #check if the stock has options
+            option_chain = results_json['optionChain']['result'][0]['options']
+            
+            if len(option_chain) == 0:
+                logger.info(f"{self.stock} does not have options, url={url}")
+                return pd.DataFrame()
+            
+            _temp_lst = _temp_lst + results_json['optionChain']['result'][0]['options'][0]['calls']
+            _temp_lst = _temp_lst + results_json['optionChain']['result'][0]['options'][0]['puts']
+                    
+            
+            if i+1  == len(expiration_dt_lst):break
+            else: i +=1 
+            
+        file_name = f"yahoo_yahooop_{self.stock}_{self.run_date}.txt"
+        
+        pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name),orient='records')
+            
 
 if __name__ == "__main__":
+    # from base_class import get_yahoo_cookies, get_yahoo_crumb
+    # cookies = get_yahoo_cookies()
+    # crumb = get_yahoo_crumb(cookies)
+    obj = YaooOp('AAPL', '2023-12-25', '1Dt2AnEoZLg', {'A3':'d=AQABBDgUj2UCEEJLYXQR-2uNclyMw60wyvoFEgEBAQFlkGWYZSXaxyMA_eMAAA&S=AQAAAunCH74ZtktSSkm3iSoQDCM'})
+    obj.load_to_staging()
     
-    obj = YahooSp('AAPL', '2023-12-25')
-    print(obj.yahoo_url)
