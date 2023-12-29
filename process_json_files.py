@@ -156,8 +156,28 @@ class ParseYahooSp(Parse_One_JSON_file_to_DataFrame):
             return data
         else:
             return pd.DataFrame()
-        
-        
+
+class ParseYahooOp(Parse_One_JSON_file_to_DataFrame):
+    def _load_to_dataframe(self, data:dict) -> pd.DataFrame:
+        data = self._open_and_read_file()
+        output = pd.DataFrame(data)
+        return output
+    
+    def _transform(self, data:pd.DataFrame) -> pd.DataFrame:
+        if not data.empty:
+            data['lastTradeDate'] = data['lastTradeDate'].apply(unix_to_regular_time)
+            # parse option contract name
+            pattern = re.compile(r'[A-Za-z]+|\d+')
+            data['stock'] = data['contractSymbol'].apply(lambda x:re.findall(pattern, x)[0])
+            data['expirationDate'] = data['contractSymbol'].apply(lambda x:re.findall(pattern, x)[1])
+            data['expirationDate'] = pd.to_datetime(data['expirationDate'], format='%y%m%d')
+            data['optionType'] = data['contractSymbol'].apply(lambda x: 'CALL' if re.findall(pattern, x)[2] =='C' else 'PUT')
+            data.rename(columns={'expiration':'expirationUnix','change':'priceChange'}, inplace=True)
+            data['inTheMoney'] = data['inTheMoney'].apply(lambda x: 1 if x == True else 0)
+            return data
+        else:
+            return pd.DataFrame()
+
 class ParseManyJSON():
        
     def __init__(self, file_name_pattern:str, disable_tqdm:bool = False) -> None:
@@ -240,10 +260,9 @@ if __name__  == "__main__":
     pattern2 = 'yahoo_yahoostats_*_2023-12-26.txt'
     pattern3 = 'yahoo_yahoosc_mostactives_2023-12-28.txt'
     pattern4 = 'yahoo_yahoosp_*_2023-12-28.txt'
-    obj = ParseManyJSON(pattern4)
-    df = obj.run('csv')
-    
-    # obj.write_final_file(df, file_type='csv')
+    pattern5 = 'yahoo_yahooop_*_2023-12-25.txt'
+    obj = ParseManyJSON(pattern5)
+    obj.run('csv')
     
     # obj.delete_staging_file()
     # obj.write_final_file(df, file_type='csv')
