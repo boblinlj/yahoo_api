@@ -1,7 +1,7 @@
 import time
 from base_class import YahooAPI_to_JSON_file
 import random
-from os import path, mkdir
+from os import path
 import json
 import pandas as pd
 from logger import get_logger
