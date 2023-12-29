@@ -166,14 +166,14 @@ class ParseYahooOp(Parse_One_JSON_file_to_DataFrame):
     def _transform(self, data:pd.DataFrame) -> pd.DataFrame:
         if not data.empty:
             data['lastTradeDate'] = data['lastTradeDate'].apply(unix_to_regular_time)
+            data.rename(columns={'expiration':'expirationUnix','change':'priceChange'}, inplace=True)
+            data['inTheMoney'] = data['inTheMoney'].apply(lambda x: 1 if x == True else 0)
             # parse option contract name
             pattern = re.compile(r'[A-Za-z]+|\d+')
             data['stock'] = data['contractSymbol'].apply(lambda x:re.findall(pattern, x)[0])
             data['expirationDate'] = data['contractSymbol'].apply(lambda x:re.findall(pattern, x)[1])
             data['expirationDate'] = pd.to_datetime(data['expirationDate'], format='%y%m%d')
             data['optionType'] = data['contractSymbol'].apply(lambda x: 'CALL' if re.findall(pattern, x)[2] =='C' else 'PUT')
-            data.rename(columns={'expiration':'expirationUnix','change':'priceChange'}, inplace=True)
-            data['inTheMoney'] = data['inTheMoney'].apply(lambda x: 1 if x == True else 0)
             return data
         else:
             return pd.DataFrame()
