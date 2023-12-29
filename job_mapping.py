@@ -24,6 +24,12 @@ option_mapping = {
         'yahoosp':{'extract_object': 'YahooSp', 
                    'parse_object':'ParseYahooSp',
                    'description':'Download Yahoo stock profile',
+                   'table':'yahoo_stock_profile',
+                   'population':'sec_ticker_2023-12-22.txt'},
+        
+        'yahooop':{'extract_object': 'YahooOp', 
+                   'parse_object':'ParseYahooop',
+                   'description':'Download Yahoo Options',
                    'table':'',
                    'population':'sec_ticker_2023-12-22.txt'},
     }
