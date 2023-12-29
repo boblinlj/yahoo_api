@@ -11,7 +11,7 @@ logger = get_logger()
 
 database_ip = '10.0.0.123'
 database_user = 'boblinlj'
-database_pw = 'Zuodan199064!'
+database_pw = os.environ["mydb"]
 database_port = 3306
 database_nm = 'financial_data'
 
