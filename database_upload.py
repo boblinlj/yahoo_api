@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine
+from sqlalchemy import exc
 import os
 import pandas as pd
 from util import parallel_process, split_dataframe, timer_func
@@ -55,6 +56,10 @@ class WriteToDB():
                                 index=False,
                                 chunksize=1,
                                 method=None)
+        except exc.IntegrityError:
+            # each teble is created with a unique index
+            # do nothing if found duplicates
+            pass
         except Exception as err:
             print(err)
     
