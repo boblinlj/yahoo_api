@@ -126,9 +126,9 @@ class YahooOp(YahooAPI_to_JSON_file):
             
 
 if __name__ == "__main__":
-    # from base_class import get_yahoo_cookies, get_yahoo_crumb
-    # cookies = get_yahoo_cookies()
-    # crumb = get_yahoo_crumb(cookies)
-    obj = YaooOp('AAPL', '2023-12-25', '1Dt2AnEoZLg', {'A3':'d=AQABBDgUj2UCEEJLYXQR-2uNclyMw60wyvoFEgEBAQFlkGWYZSXaxyMA_eMAAA&S=AQAAAunCH74ZtktSSkm3iSoQDCM'})
+    from base_class import get_yahoo_cookies, get_yahoo_crumb
+    cookies = get_yahoo_cookies()
+    crumb = get_yahoo_crumb(cookies)
+    obj = YahooOp('AAPL', '2023-12-25', crumb, cookies)
     obj.load_to_staging()
     
