@@ -63,45 +63,8 @@ class WriteToDB():
         except Exception as err:
             print(err)
     
-    def remove_already_entered(self, new_df) -> pd.DataFrame:
-        
-        existing_check_sql = {
-            'yahoo_fundamentals':f"select distinct stock from financial_data.yahoo_fundamentals where updated_dt = '{self.data_date}'",
-            'yahoo_financial_statements':f'select distinct stock, asOfDate from financial_data.yahoo_financial_statements',
-            'yahoo_financial_statements_quarter':f'select distinct stock, asOfDate from financial_data.yahoo_financial_statements_quarter',
-            'yahoo_financial_statements_annual':f'select distinct stock, asOfDate from financial_data.yahoo_financial_statements_annual',
-            'yahoo_most_shorted_stocks':f"SELECT distinct stock FROM financial_data.yahoo_most_shorted_stocks WHERE updated_dt = '{self.data_date}'",
-            'yahoo_most_actives':f"SELECT distinct stock FROM financial_data.yahoo_most_actives WHERE updated_dt = '{self.data_date}'",
-            'yahoo_top_etfs_us':f"SELECT distinct stock FROM financial_data.yahoo_top_etfs_us WHERE updated_dt = '{self.data_date}'",
-            'yahoo_stock_profile':f"select distinct stock from financial_data.yahoo_stock_profile"
-        }
-        
-        df_to_insert = pd.DataFrame()
-
-        existing_df = pd.read_sql(sql = existing_check_sql[self.table], con=self.cnn)
-        
-        if existing_df.empty:
-            logger.info(f'Will directly insert {new_df.shape[0]} rows, no existing data')
-            df_to_insert = new_df
-        
-        elif self.table in ['yahoo_fundamentals', 'yahoo_most_shorted_stocks', 'yahoo_most_actives' , 'yahoo_top_etfs_us', 'yahoo_stock_profile']:
-            logger.info(f'There are {new_df.shape[0]} rows before removing existing data')
-            df_to_insert = new_df.loc[~new_df['stock'].isin(existing_df['stock'])]
-            logger.info(f'There are {df_to_insert.shape[0]} rows after removing existing data, {new_df.shape[0]-df_to_insert.shape[0]} removed')
-        
-        elif self.table in ['yahoo_financial_statements','yahoo_financial_statements_quarter','yahoo_financial_statements_annual']:
-            logger.info(f'There are {new_df.shape[0]} rows before removing existing data')
-            df_to_insert = new_df.loc[(~new_df['stock'].isin(existing_df['stock'])) & 
-                                      (~new_df['asOfDate'].isin(existing_df['asOfDate']))]
-            logger.info(f'There are {df_to_insert.shape[0]} rows after removing existing data, {new_df.shape[0]-df_to_insert.shape[0]} removed')        
-        else:
-            pass
-
-        return df_to_insert
-    
     @timer_func
     def write_to_db_parallel(self, dataframe) -> None:
-        # dedupped_df = self.remove_already_entered(dataframe)
         smaller_df_lst = split_dataframe(dataframe)
         parallel_process(smaller_df_lst, self.write_to_db)
         

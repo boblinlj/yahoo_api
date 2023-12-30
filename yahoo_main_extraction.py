@@ -6,11 +6,12 @@ from datetime import date
 from util import parallel_process
 from logger import get_logger
 from typing import Union
+import glob
 
 logger = get_logger()
 
 # --------------------------------entrance------------------------
-def main(options: Union[str,list], run_date = date.today().strftime('%Y-%m-%d')) -> None:
+def main(options: Union[str,list], run_date = date.today(), n_work=30) -> None:
    
     # calling function
     def _each_stock_run(run_class, ticker, crumb, cookies, run_date) -> None:
@@ -34,11 +35,20 @@ def main(options: Union[str,list], run_date = date.today().strftime('%Y-%m-%d'))
                 'ticker':i, 
                 'run_date':run_date, 
                 'crumb':crumb,
-                'cookies':cookies} for i in get_population(option_mapping[each_option]['population'])]
+                'cookies':cookies} for i in get_population(option_mapping[each_option]['population'])[:10]]
         # parallel run with 30 jobs at a time
-        parallel_process(arr, _each_stock_run, use_kwargs=True, n_jobs=30, use_tqdm=True)
+        parallel_process(arr, _each_stock_run, use_kwargs=True, n_jobs=n_work, use_tqdm=True)
+
+        # check number of files entered
+        file_pattern = f'staging/{run_date}/yahoo_{each_option}_*_{run_date}.txt'
+        number_of_file = len(glob.glob(file_pattern))
+        logger.info(f"There are {number_of_file} files entered.")
         
 if __name__ == '__main__':
     import sys
     logger.info(f"Options are: {sys.argv[1:]}")
-    main(sys.argv[1:])
+    options = sys.argv[1]
+    run_date = sys.argv[2]
+    n_work = sys.argv[3]
+
+    main(options=options, run_date=run_date, n_work = int(n_work))

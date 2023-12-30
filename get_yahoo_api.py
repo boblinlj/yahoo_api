@@ -3,6 +3,7 @@ from base_class import YahooAPI_to_JSON_file
 import random
 from os import path
 import json
+from json.decoder import JSONDecodeError
 import pandas as pd
 from logger import get_logger
 
@@ -92,12 +93,21 @@ class YahooOp(YahooAPI_to_JSON_file):
         i = 0
         
         while True:
-            url = self.yahoo_url(expiration_dt=expiration_dt_lst[i])
-            response = self.read_yahoo_api(url)
-            results_json = json.loads(response)
+            for triles in range(3):
+                url = self.yahoo_url(expiration_dt=expiration_dt_lst[i])
+                response = self.read_yahoo_api(url)
+                try:
+                    results_json = json.loads(response)
+                    break
+                except JSONDecodeError:
+                    logger.debug(f"Trile:{triles}  {self.stock} has wrong JSON, {url}")
+                    continue
+                    
+                
             # extract expiration_dt_lst in the first extraction
             if i == 0:
                 # check if stock is valid
+                logger.info(f"Extract url = {url}")
                 try:
                     expiration_dt_lst = results_json['optionChain']['result'][0]['expirationDates']
                 except IndexError:
@@ -122,7 +132,7 @@ class YahooOp(YahooAPI_to_JSON_file):
         
         self.check_and_mkdir(path.join('staging', self.run_date))
         
-        pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name),orient='records')
+        pd.DataFrame(_temp_lst).to_json(orient='records')
             
 
 if __name__ == "__main__":

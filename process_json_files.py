@@ -9,6 +9,7 @@ from tqdm import tqdm
 from base_class import Parse_One_JSON_file_to_DataFrame
 from job_mapping import option_mapping
 import re
+from yahoo_items import mostshortedstocks_table_columns
 
 logger = get_logger()
 
@@ -130,6 +131,19 @@ class ParseYahooSc(Parse_One_JSON_file_to_DataFrame):
             if time_change in data.columns:
                 data[time_change] = data[time_change].apply(unix_milliseconds_to_regular_time)
 
+        #drop columns that are not in the table
+        drop_columns=[]
+        for col in data.columns:
+            if col not in eval(f'{self.stock}_table_columns'):
+                drop_columns.append(col)
+        data.drop(columns=drop_columns, inplace=True)
+        #if item not in the extracted dataframe, create column using reindex with nan values
+        add_columns=[]
+        for col in eval(f'{self.stock}_table_columns'):
+            if col not in data.columns:
+                add_columns.append(col)
+        data.reindex(add_columns)
+
         return data
 
 class ParseYahooSp(Parse_One_JSON_file_to_DataFrame):
@@ -140,8 +154,8 @@ class ParseYahooSp(Parse_One_JSON_file_to_DataFrame):
             
             if data['quoteSummary']['result'][0]['summaryProfile']['sector'] != "" and data['quoteSummary']['result'][0]['summaryProfile']['industry'] != "":
                 output = pd.DataFrame({'sector':data['quoteSummary']['result'][0]['summaryProfile']['sector'],
-                                    'industry':data['quoteSummary']['result'][0]['summaryProfile']['industry']
-                                    }, index=[0])
+                                       'industry':data['quoteSummary']['result'][0]['summaryProfile']['industry']
+                                      }, index=[0])
                 return output
             else:
                 return pd.DataFrame()
@@ -259,7 +273,7 @@ if __name__  == "__main__":
     
     pattern1 = 'yahoo_yahoofs_*_2023-12-26.txt'
     pattern2 = 'yahoo_yahoostats_*_2023-12-26.txt'
-    pattern3 = 'yahoo_yahoosc_mostactives_2023-12-28.txt'
+    pattern3 = 'yahoo_yahoosc_*_2023-12-28.txt'
     pattern4 = 'yahoo_yahoosp_*_2023-12-28.txt'
     pattern5 = 'yahoo_yahooop_*_2023-12-25.txt'
     obj = ParseManyJSON(pattern5)
