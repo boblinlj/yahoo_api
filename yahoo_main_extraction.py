@@ -1,6 +1,6 @@
 from read_stock_population import get_population
 from base_class import get_yahoo_cookies, get_yahoo_crumb
-from get_yahoo_api import YahooStats, YahooFS, YahooScreener, YahooSp
+from get_yahoo_api import YahooStats, YahooFS, YahooScreener, YahooSp, YahooOp
 from job_mapping import option_mapping
 from datetime import date
 from util import parallel_process

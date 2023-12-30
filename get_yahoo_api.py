@@ -73,7 +73,7 @@ class YahooSp(YahooAPI_to_JSON_file):
     def yahoo_url(self) -> str:
         return f"https://query{random.choice(['1','2'])}.finance.yahoo.com/v10/finance/quoteSummary/{self.stock}?modules=summaryProfile&crumb={self.crumb}"
 
-class YaooOp(YahooAPI_to_JSON_file):
+class YahooOp(YahooAPI_to_JSON_file):
 
     name = 'yahooop'
     description = 'Yahoo options'
