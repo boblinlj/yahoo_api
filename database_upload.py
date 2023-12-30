@@ -53,8 +53,8 @@ class WriteToDB():
                                 con=self.cnn,
                                 if_exists='append',
                                 index=False,
-                                chunksize=10,
-                                method='multi')
+                                chunksize=1,
+                                method=None)
         except Exception as err:
             print(err)
     
