@@ -174,6 +174,7 @@ class ParseYahooOp(Parse_One_JSON_file_to_DataFrame):
             data['expirationDate'] = data['contractSymbol'].apply(lambda x:re.findall(pattern, x)[1])
             data['expirationDate'] = pd.to_datetime(data['expirationDate'], format='%y%m%d')
             data['optionType'] = data['contractSymbol'].apply(lambda x: 'CALL' if re.findall(pattern, x)[2] =='C' else 'PUT')
+            data['updated_dt'] = self.data_date
             return data
         else:
             return pd.DataFrame()

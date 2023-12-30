@@ -96,8 +96,8 @@ class WriteToDB():
     
     @timer_func
     def write_to_db_parallel(self, dataframe) -> None:
-        dedupped_df = self.remove_already_entered(dataframe)
-        smaller_df_lst = split_dataframe(dedupped_df)
+        # dedupped_df = self.remove_already_entered(dataframe)
+        smaller_df_lst = split_dataframe(dataframe)
         parallel_process(smaller_df_lst, self.write_to_db)
         
     def pivot_table_yahoofs(self, dataframe:pd.DataFrame, where=None) -> pd.DataFrame:
@@ -119,8 +119,8 @@ class WriteToDB():
         return pvt
         
 if __name__ == "__main__":
-    obj = WriteToDB('yahoosp_2023-12-28.csv',
-                    table='yahoo_stock_profile',
+    obj = WriteToDB('yahooop_2023-12-25.csv',
+                    table='yahoo_options',
                     chunk_size=1_000)
     df = obj.create_dataframe()
     # df2 = obj.pivot_table_yahoofs(df, "df['periodType'] == '3M'")
