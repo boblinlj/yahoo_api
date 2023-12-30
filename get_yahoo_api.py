@@ -100,7 +100,6 @@ class YahooOp(YahooAPI_to_JSON_file):
                 # check if stock is valid
                 try:
                     expiration_dt_lst = results_json['optionChain']['result'][0]['expirationDates']
-
                 except IndexError:
                     logger.info(f"{self.stock} does not have {url}")
                     return pd.DataFrame()
