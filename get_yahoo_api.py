@@ -62,6 +62,7 @@ class YahooScreener(YahooAPI_to_JSON_file):
         if len(_temp_lst) == 0:
             logger.info(f'{self.stock} does not have any information')
         else:
+            self.check_and_mkdir(path.join('staging', self.run_date))
             pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name),orient='records')
 
 class YahooSp(YahooAPI_to_JSON_file):  
@@ -119,6 +120,8 @@ class YaooOp(YahooAPI_to_JSON_file):
             else: i +=1 
             
         file_name = f"yahoo_yahooop_{self.stock}_{self.run_date}.txt"
+        
+        self.check_and_mkdir(path.join('staging', self.run_date))
         
         pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name),orient='records')
             
