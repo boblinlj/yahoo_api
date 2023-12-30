@@ -58,13 +58,14 @@ class YahooScreener(YahooAPI_to_JSON_file):
                 break
             start = start + n
 
-        file_name = f"yahoo_yahoosc_{self.stock.replace('_','').lower()}_{self.run_date}.txt"
-        
         if len(_temp_lst) == 0:
             logger.info(f'{self.stock} does not have any information')
         else:
+            logger.info(f"{self.stock} has {len(_temp_lst)} pages.")
+            file_name = f"yahoo_yahoosc_{self.stock.replace('_','').lower()}_{self.run_date}.txt"
             self.check_and_mkdir(path.join('staging', self.run_date))
             pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name),orient='records')
+            logger.info(f"{file_name} is saved in {path.join('staging', self.run_date)}")
 
 class YahooSp(YahooAPI_to_JSON_file):  
 
@@ -102,8 +103,7 @@ class YahooOp(YahooAPI_to_JSON_file):
                 except JSONDecodeError:
                     logger.debug(f"Trile:{triles}  {self.stock} has wrong JSON, {url}")
                     continue
-                    
-                
+
             # extract expiration_dt_lst in the first extraction
             if i == 0:
                 # check if stock is valid
@@ -127,13 +127,15 @@ class YahooOp(YahooAPI_to_JSON_file):
             
             if i+1  == len(expiration_dt_lst):break
             else: i +=1 
-            
-        file_name = f"yahoo_yahooop_{self.stock}_{self.run_date}.txt"
         
-        self.check_and_mkdir(path.join('staging', self.run_date))
-        
-        pd.DataFrame(_temp_lst).to_json(orient='records')
-            
+        if len(_temp_lst) == 0:
+            return None
+        else:
+            logger.info(f"{self.stock} has {len(_temp_lst)} expiration date.")
+            file_name = f"yahoo_yahooop_{self.stock}_{self.run_date}.txt"
+            self.check_and_mkdir(path.join('staging', self.run_date))
+            pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name), orient='records')
+            logger.info(f"{file_name} is saved in {path.join('staging', self.run_date)}")
 
 if __name__ == "__main__":
     from base_class import get_yahoo_cookies, get_yahoo_crumb

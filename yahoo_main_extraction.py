@@ -35,7 +35,7 @@ def main(options: Union[str,list], run_date = date.today(), n_work=30) -> None:
                 'ticker':i, 
                 'run_date':run_date, 
                 'crumb':crumb,
-                'cookies':cookies} for i in get_population(option_mapping[each_option]['population'])[:10]]
+                'cookies':cookies} for i in get_population(option_mapping[each_option]['population'])[:]]
         # parallel run with 30 jobs at a time
         parallel_process(arr, _each_stock_run, use_kwargs=True, n_jobs=n_work, use_tqdm=True)
 
