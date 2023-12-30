@@ -27,7 +27,7 @@ def main(options: Union[str,list], run_date = date.today().strftime('%Y-%m-%d'))
                 file_pattern = f'yahoo_{each_option}_{each_table.replace("_","")}_{run_date}.txt'
                 main_josn_procsser(file_pattern, 'csv')
         else:
-            logger.info(f"Start to process {each_option}: {each_table}")
+            logger.info(f"Start to process {each_option}...")
             file_pattern = f'yahoo_{each_option}_*_{run_date}.txt'
             main_josn_procsser(file_pattern, 'csv')
 
