@@ -34,6 +34,7 @@ option_mapping = {
         'yahooop':{'extract_object': 'YahooOp', 
                    'parse_object':'ParseYahooOp',
                    'description':'Download Yahoo Options',
+                   'multi_table':False,
                    'table':'yahoo_options',
                    'population':'sec_ticker_2023-12-22.txt'},
     }
