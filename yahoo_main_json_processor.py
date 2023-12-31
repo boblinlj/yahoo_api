@@ -1,5 +1,4 @@
-from process_json_files import ParseManyJSON
-from database_upload import WriteToDB
+from _process_json_files import ParseManyJSON
 from logger import get_logger
 from datetime import date
 from typing import Union

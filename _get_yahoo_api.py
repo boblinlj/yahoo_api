@@ -1,5 +1,5 @@
 import time
-from base_class import YahooAPI_to_JSON_file
+from _base_class import YahooAPI_to_JSON_file
 import random
 from os import path
 import json
@@ -138,7 +138,7 @@ class YahooOp(YahooAPI_to_JSON_file):
             logger.info(f"{file_name} is saved in {path.join('staging', self.run_date)}")
 
 if __name__ == "__main__":
-    from base_class import get_yahoo_cookies, get_yahoo_crumb
+    from _base_class import get_yahoo_cookies, get_yahoo_crumb
     cookies = get_yahoo_cookies()
     crumb = get_yahoo_crumb(cookies)
     obj = YahooOp('AAPL', '2023-12-25', crumb, cookies)

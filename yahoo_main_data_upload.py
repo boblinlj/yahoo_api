@@ -1,4 +1,4 @@
-from database_upload import WriteToDB
+from _database_upload import WriteToDB
 from datetime import date
 from typing import Union
 from logger import get_logger

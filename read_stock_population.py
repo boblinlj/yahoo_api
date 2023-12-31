@@ -1,5 +1,5 @@
 import pandas as pd
-from os import path, getcwd
+from os import path
 from logger import get_logger
 
 logger = get_logger()
