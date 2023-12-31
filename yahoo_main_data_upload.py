@@ -21,14 +21,16 @@ def main(options: Union[str,list], run_date = date.today().strftime('%Y-%m-%d'))
                                 chunk_size=1_000)
                 df = obj.create_dataframe()
                 obj.write_to_db_parallel(df)
+                logger.info(f"{obj.check_entries} lines of data hve been entered to {each_table}")
         else:
             each_table = option_mapping[each_option]['table']
             logger.info(f"Uplading {each_table}...")
             obj = WriteToDB(f'{each_option}_{run_date}.csv',
-                            table=f"yahoo_{each_table}",
+                            table=f"{each_table}",
                             chunk_size=1_000)
             df = obj.create_dataframe()
             obj.write_to_db_parallel(df)
+            logger.info(f"{obj.check_entries:,d} lines of data hve been entered to table:{each_table}")
 
     
 if __name__ == '__main__':

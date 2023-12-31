@@ -4,3 +4,5 @@ include
 lib
 .vscode
 *.csv
+# test program files
+test_*.py

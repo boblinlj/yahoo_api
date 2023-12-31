@@ -18,12 +18,12 @@ database_nm = 'financial_data'
 
 class WriteToDB():
     cnn = create_engine(f"""mysql+mysqlconnector://{database_user}"""
-                    f""":{database_pw}"""
-                    f"""@{database_ip}"""
-                    f""":{database_port}"""
-                    f"""/{database_nm}""",
-                    pool_size=30,
-                    max_overflow=0)
+                        f""":{database_pw}"""
+                        f"""@{database_ip}"""
+                        f""":{database_port}"""
+                        f"""/{database_nm}""",
+                        pool_size=30,
+                        max_overflow=0)
     
     def __init__(self, file_name_pattern, table, chunk_size=10_000) -> None:
         self.file_name_pattern = file_name_pattern
@@ -51,11 +51,11 @@ class WriteToDB():
     def write_to_db(self, dataframe) -> None:
         try:
             dataframe.to_sql(name=self.table,
-                                con=self.cnn,
-                                if_exists='append',
-                                index=False,
-                                chunksize=1,
-                                method=None)
+                            con=self.cnn,
+                            if_exists='append',
+                            index=False,
+                            chunksize=1,
+                            method=None)
         except exc.IntegrityError:
             # each teble is created with a unique index
             # do nothing if found duplicates
@@ -85,23 +85,21 @@ class WriteToDB():
         pvt.reset_index(inplace=True)
         
         return pvt
+    
+    @property
+    def check_entries(self) -> None:
+        sql = f"""
+                    SELECT count(1) as no_of_entries
+                    FROM financial_data.{self.table} 
+                    where updated_dt = '{self.data_date}'
+                """
+        df = pd.read_sql(con=self.cnn,sql = sql)
+        no_of_entries = df['no_of_entries'][0]
+        
+        return no_of_entries
         
 if __name__ == "__main__":
-    obj = WriteToDB('yahooop_2023-12-25.csv',
+    obj = WriteToDB('yahooop_2023-12-29.csv',
                     table='yahoo_options',
                     chunk_size=1_000)
-    df = obj.create_dataframe()
-    # df2 = obj.pivot_table_yahoofs(df, "df['periodType'] == '3M'")
-    obj.write_to_db_parallel(df)
-    
-    
-    # pvt = pd.pivot_table(df.loc[],
-    #                      values='value',
-    #                      index=['stock', 'asOfDate'],
-    #                      columns=['item'],
-    #                      aggfunc='sum')
-    # print(pvt.reset_index(inplace=True))
-    # print(pvt.head())
-    # print(pvt.shape)
-    
-    # obj.write_to_db_parallel(df)
+    df = obj.check_entries()
