@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy import exc
+from sqlalchemy import text
 import os
 import pandas as pd
 from util import parallel_process, split_dataframe, timer_func
@@ -97,9 +98,44 @@ class WriteToDB():
         no_of_entries = df['no_of_entries'][0]
         
         return no_of_entries
+    
+    def check_if_table_exist(self) -> bool:
+        sql = f"""
+                show tables like '{self.table}'
+            """
+        df = pd.read_sql(con=self.cnn,sql = sql)
+        logger.info(f"Check table={self.table} {'passed' if df.empty==False else 'failed'}")
+        return df.empty
+    
+    def create_table(self) -> bool:
+        ddl_file = f'create_{self.table}.sql'
+        with self.cnn.connect() as c:
+            path = os.path.join('ddl',ddl_file)
+            if not os.path.exists(path):
+                logger.info(f"New table:{self.table} cannot be created due to missing sql file in the ddl folder")
+                return False
+            else:
+                with open(path) as f:
+                    sql = text(f.read())
+                    c.execute(sql)
+                    logger.info(f"New table:{self.table} is created!")
+                return True
+        
+    def run(self) -> None:
+        if not self.check_if_table_exist():
+            if self.create_engine():
+                df = self.create_dataframe()
+                self.write_to_db_parallel(df)
+                logger.info(f"{self.check_entries} lines of data hve been entered to {self.table}")
+            else:
+                logger.debug('Data upload failed')
+        else:
+            df = self.create_dataframe()
+            self.write_to_db_parallel(df)
+            logger.info(f"{self.check_entries} lines of data hve been entered to {self.table}")
         
 if __name__ == "__main__":
     obj = WriteToDB('yahooop_2023-12-29.csv',
-                    table='yahoo_options',
+                    table='abc',
                     chunk_size=1_000)
-    df = obj.check_entries()
+    df = obj.create_table()
