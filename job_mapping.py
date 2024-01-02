@@ -37,4 +37,11 @@ option_mapping = {
                    'multi_table':False,
                    'table':'yahoo_options',
                    'population':'sec_ticker_2023-12-22.txt'},
+        
+        'yahoopr':{'extract_object': 'YahooPr', 
+                   'parse_object':'ParseYahooPr',
+                   'description':'Download Yahoo prices',
+                   'multi_table':False,
+                   'table':'yahoo_prices',
+                   'population':'sec_ticker_2023-12-22.txt'},
     }

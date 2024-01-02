@@ -105,7 +105,10 @@ class WriteToDB():
             """
         df = pd.read_sql(con=self.cnn,sql = sql)
         logger.info(f"Check table={self.table} {'passed' if df.empty==False else 'failed'}")
-        return df.empty
+        if df.empty:
+            return False
+        else:
+            return True
     
     def create_table(self) -> bool:
         ddl_file = f'create_{self.table}.sql'
@@ -123,7 +126,7 @@ class WriteToDB():
         
     def run(self) -> None:
         if not self.check_if_table_exist():
-            if self.create_engine():
+            if self.create_table():
                 df = self.create_dataframe()
                 self.write_to_db_parallel(df)
                 logger.info(f"{self.check_entries} lines of data hve been entered to {self.table}")

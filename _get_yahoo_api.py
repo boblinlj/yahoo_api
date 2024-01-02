@@ -6,6 +6,7 @@ import json
 from json.decoder import JSONDecodeError
 import pandas as pd
 from logger import get_logger
+import numpy as np
 
 logger = get_logger()
 
@@ -137,10 +138,66 @@ class YahooOp(YahooAPI_to_JSON_file):
             pd.DataFrame(_temp_lst).to_json(path.join('staging', self.run_date, file_name), orient='records')
             logger.info(f"{file_name} is saved in {path.join('staging', self.run_date)}")
 
+class YahooPr(YahooAPI_to_JSON_file):
+
+    name = 'yahoopr'
+    description = 'Yahoo price'
+    
+    def yahoo_url(self, range='2y') -> str:
+        return f"https://query{random.choice(['1','2'])}.finance.yahoo.com/v8/finance/chart/{self.stock}?symbol={self.stock}&range={range}&interval=1d&includePrePost=true&events=div%2Csplit"
+        
+    # def load_to_staging(self) -> None:
+    #     url = self.yahoo_url(range='1y')
+    #     response = self.read_yahoo_api(url)
+    #     results_json = json.loads(response)
+        
+    #     if results_json is None:
+    #         return None
+    #     elif results_json['chart']['result'] is None:
+    #         return None
+        
+    #     target = results_json['chart']['result'][0]
+        
+    #     output_df = pd.DataFrame()
+        
+    #     price_data = {
+    #         'date':target['timestamp'],
+    #         'high':target['indicators']['quote'][0]['high'],
+    #         'low':target['indicators']['quote'][0]['low'],
+    #         'open':target['indicators']['quote'][0]['open'],
+    #         'close':target['indicators']['quote'][0]['close'],
+    #         'volume':target['indicators']['quote'][0]['volume'],
+    #         'yh_adjclose':target['indicators']['adjclose'][0]['adjclose'],
+    #     }
+    #     price_df = pd.DataFrame.from_dict(price_data)
+
+    #     try:
+    #         dividends_data = [x for x in target['events']['dividends'].values()]
+    #         dividends_df = pd.DataFrame.from_dict(dividends_data)
+    #     except KeyError as err:
+    #         dividends_df = pd.DataFrame.from_dict([{'date':np.nan,
+    #                                                'amount':np.nan}])
+        
+    #     try:
+    #         splits_data = [x for x in target['events']['splits'].values()]
+    #         splits_df = pd.DataFrame.from_dict(splits_data)
+    #     except KeyError as err:
+    #         splits_df = pd.DataFrame.from_dict([{'date':np.nan,
+    #                                             'denominator':np.nan,
+    #                                             'numerator':np.nan,
+    #                                             'splitRatio':np.nan}])
+        
+    #     output_df = pd.concat([price_df,dividends_df,splits_df], keys = 'date')
+        
+    #     file_name = f"yahoo_yahoopr_{self.stock}_{self.run_date}.txt"
+    #     output_df.to_json(path.join('staging', self.run_date, file_name), orient='records')
+
+        
+        
 if __name__ == "__main__":
-    from _base_class import get_yahoo_cookies, get_yahoo_crumb
-    cookies = get_yahoo_cookies()
-    crumb = get_yahoo_crumb(cookies)
-    obj = YahooOp('AAPL', '2023-12-25', crumb, cookies)
+    # from _base_class import get_yahoo_cookies, get_yahoo_crumb
+    # cookies = get_yahoo_cookies()
+    # crumb = get_yahoo_crumb(cookies)
+    obj = YahooPr('ABC', '2023-12-25', 'lHTIz0XcHT4', {"A3":"d=AQABBH0Fk2UCEHD2PHaT7ci323ZNNcKmoisFEgEBAQFWlGWcZSXaxyMA_eMAAA&S=AQAAAm0NjVKwyo0eIaDu4GSneTk"})
     obj.load_to_staging()
     

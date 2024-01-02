@@ -193,6 +193,66 @@ class ParseYahooOp(Parse_One_JSON_file_to_DataFrame):
         else:
             return pd.DataFrame()
 
+class ParseYahooPr(Parse_One_JSON_file_to_DataFrame):
+    def _load_to_dataframe(self, data:dict) -> pd.DataFrame:
+        data = self._open_and_read_file()
+        try:
+            target = data['chart']['result'][0]
+        except TypeError:
+            return pd.DataFrame()
+        
+        try:
+            price_data = {
+                'date':target['timestamp'],
+                'high':target['indicators']['quote'][0]['high'],
+                'low':target['indicators']['quote'][0]['low'],
+                'open':target['indicators']['quote'][0]['open'],
+                'close':target['indicators']['quote'][0]['close'],
+                'volume':target['indicators']['quote'][0]['volume'],
+                'yh_adjclose':target['indicators']['adjclose'][0]['adjclose'],
+            }
+            price_df = pd.DataFrame.from_dict(price_data)
+        except KeyError as err:
+            price_df = pd.DataFrame.from_dict([{'date':np.nan,
+                                                'high':np.nan,
+                                                'low':np.nan,
+                                                'open':np.nan,
+                                                'close':np.nan,
+                                                'volume':np.nan,
+                                                'yh_adjclose':np.nan}])
+
+        try:
+            dividends_data = [x for x in target['events']['dividends'].values()]
+            dividends_df = pd.DataFrame.from_dict(dividends_data)
+        except KeyError as err:
+            dividends_df = pd.DataFrame.from_dict([{'date':np.nan,
+                                                'amount':np.nan}])
+        
+        try:
+            splits_data = [x for x in target['events']['splits'].values()]
+            splits_df = pd.DataFrame.from_dict(splits_data)
+        except KeyError as err:
+            splits_df = pd.DataFrame.from_dict([{'date':np.nan,
+                                                'denominator':np.nan,
+                                                'numerator':np.nan,
+                                                'splitRatio':""}])
+        
+        output_df = pd.concat([price_df,dividends_df,splits_df], keys = 'date')
+        output_df.reset_index(inplace=True)
+        output_df.drop(columns=['level_0','level_1'], inplace=True)
+
+        return output_df
+    
+    def _transform(self, data:pd.DataFrame) -> pd.DataFrame:
+        if not data.empty:
+            data['stock'] = self.stock
+            data.rename(columns={'date':'dateUnix','amount':'dividend'}, inplace=True)
+            data['date'] = data['dateUnix'].apply(unix_to_regular_time)
+            data['updated_dt'] = self.data_date
+            return data
+        else:
+            return pd.DataFrame()
+
 class ParseManyJSON():
        
     def __init__(self, file_name_pattern:str, disable_tqdm:bool = False) -> None:
@@ -276,7 +336,8 @@ if __name__  == "__main__":
     pattern3 = 'yahoo_yahoosc_*_2023-12-28.txt'
     pattern4 = 'yahoo_yahoosp_*_2023-12-28.txt'
     pattern5 = 'yahoo_yahooop_*_2023-12-25.txt'
-    obj = ParseManyJSON(pattern5)
+    pattern6 = 'yahoo_yahoopr_*_2024-01-01.txt'
+    obj = ParseManyJSON(pattern6)
     obj.run('csv')
     
     # obj.delete_staging_file()
