@@ -143,7 +143,7 @@ class YahooPr(YahooAPI_to_JSON_file):
     name = 'yahoopr'
     description = 'Yahoo price'
     
-    def yahoo_url(self, range='2y') -> str:
+    def yahoo_url(self, range='1d') -> str:
         return f"https://query{random.choice(['1','2'])}.finance.yahoo.com/v8/finance/chart/{self.stock}?symbol={self.stock}&range={range}&interval=1d&includePrePost=true&events=div%2Csplit"
         
     # def load_to_staging(self) -> None:

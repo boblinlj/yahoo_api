@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy import exc
 from sqlalchemy import text
+import numpy as np
 import os
 import pandas as pd
 from util import parallel_process, split_dataframe, timer_func
@@ -8,6 +9,7 @@ from logger import get_logger
 import glob
 import re
 from tqdm import tqdm
+from job_mapping import option_mapping
 
 logger = get_logger()
 
@@ -18,45 +20,51 @@ database_port = 3306
 database_nm = 'financial_data'
 
 class WriteToDB():
-    cnn = create_engine(f"""mysql+mysqlconnector://{database_user}"""
-                        f""":{database_pw}"""
-                        f"""@{database_ip}"""
-                        f""":{database_port}"""
-                        f"""/{database_nm}""",
-                        pool_size=30,
-                        max_overflow=0)
     
-    def __init__(self, file_name_pattern, table, chunk_size=10_000) -> None:
+    def __init__(self, file_name_pattern, table, chunk_size=10_000, n_worker=1) -> None:
         self.file_name_pattern = file_name_pattern
         self.table = table
         self.chunk_size = chunk_size
+        self.n_worker = n_worker
         date_pattern = re.compile(r'(\d{4}-\d{2}-\d{2})')
         self.data_date = re.findall(date_pattern, self.file_name_pattern)[0]
         self.error = 0
+        self.option = self.file_name_pattern.split('_')[0]
         
     def create_dataframe(self) -> pd.DataFrame:
-        csv_files = glob.glob(os.path.join('final', self.file_name_pattern, '*.csv'))
+        csv_files = glob.glob(os.path.join('final', self.file_name_pattern, '*.csv'))[:]
         logger.info(f"Program will read the following files: {csv_files}")
         
         if len(csv_files) == 0:
             logger.info(f"""No data in "{os.path.join('final', self.file_name_pattern)}" """)
             return pd.DataFrame()
         else:
-            df_list = [pd.read_csv(file) for file in tqdm(csv_files)]
+            df_list = [pd.read_csv(file, dtype=option_mapping[self.option].get('table_data_type_for_pd')) for file in tqdm(csv_files)]
             logger.info(f'Creating dataframe from csv files...')
             df =  pd.concat(df_list, ignore_index=True)
             if 'Unnamed: 0' in df.columns:
                 df.drop(columns='Unnamed: 0', inplace=True)
             return df
     
+    def create_connection(self):
+        cnn = create_engine(f"""mysql+mysqlconnector://{database_user}"""
+                        f""":{database_pw}"""
+                        f"""@{database_ip}"""
+                        f""":{database_port}"""
+                        f"""/{database_nm}""",
+                        pool_size=30,
+                        max_overflow=0)
+        return cnn
+    
     def write_to_db(self, dataframe) -> None:
         try:
+            cnn = self.create_connection()
             dataframe.to_sql(name=self.table,
-                            con=self.cnn,
+                            con=cnn,
                             if_exists='append',
                             index=False,
-                            chunksize=1,
-                            method=None)
+                            chunksize=100,
+                            method='multi')
         except exc.IntegrityError:
             # each teble is created with a unique index
             # do nothing if found duplicates
@@ -66,8 +74,8 @@ class WriteToDB():
     
     @timer_func
     def write_to_db_parallel(self, dataframe) -> None:
-        smaller_df_lst = split_dataframe(dataframe)
-        parallel_process(smaller_df_lst, self.write_to_db)
+        smaller_df_lst = split_dataframe(dataframe)[:]
+        parallel_process(smaller_df_lst, self.write_to_db, n_jobs=self.n_worker)
         
     def pivot_table_yahoofs(self, dataframe:pd.DataFrame, where=None) -> pd.DataFrame:
         if where is None:
@@ -94,7 +102,7 @@ class WriteToDB():
                     FROM financial_data.{self.table} 
                     where updated_dt = '{self.data_date}'
                 """
-        df = pd.read_sql(con=self.cnn,sql = sql)
+        df = pd.read_sql(con=self.create_connection(),sql = sql)
         no_of_entries = df['no_of_entries'][0]
         
         return no_of_entries
@@ -103,7 +111,7 @@ class WriteToDB():
         sql = f"""
                 show tables like '{self.table}'
             """
-        df = pd.read_sql(con=self.cnn,sql = sql)
+        df = pd.read_sql(con=self.create_connection(),sql = sql)
         logger.info(f"Check table={self.table} {'passed' if df.empty==False else 'failed'}")
         if df.empty:
             return False
@@ -112,7 +120,7 @@ class WriteToDB():
     
     def create_table(self) -> bool:
         ddl_file = f'create_{self.table}.sql'
-        with self.cnn.connect() as c:
+        with self.create_connection().connect() as c:
             path = os.path.join('ddl',ddl_file)
             if not os.path.exists(path):
                 logger.info(f"New table:{self.table} cannot be created due to missing sql file in the ddl folder")
@@ -128,12 +136,14 @@ class WriteToDB():
         if not self.check_if_table_exist():
             if self.create_table():
                 df = self.create_dataframe()
+                logger.info(f"{df.shape[0]} lines of data have been read from csv")
                 self.write_to_db_parallel(df)
-                logger.info(f"{self.check_entries} lines of data hve been entered to {self.table}")
+                logger.info(f"{self.check_entries} lines of data have been entered to {self.table}")
             else:
                 logger.debug('Data upload failed')
         else:
             df = self.create_dataframe()
+            logger.info(f"{df.shape[0]} lines of data have been read from csv")
             self.write_to_db_parallel(df)
             logger.info(f"{self.check_entries} lines of data hve been entered to {self.table}")
         

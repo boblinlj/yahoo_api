@@ -10,6 +10,7 @@ from _base_class import Parse_One_JSON_file_to_DataFrame
 from job_mapping import option_mapping
 import re
 from yahoo_items import mostshortedstocks_table_columns, mostactives_table_columns, topetfsus_table_columns
+from functools import reduce
 
 logger = get_logger()
 
@@ -237,9 +238,11 @@ class ParseYahooPr(Parse_One_JSON_file_to_DataFrame):
                                                 'numerator':np.nan,
                                                 'splitRatio':""}])
         
-        output_df = pd.concat([price_df,dividends_df,splits_df], keys = 'date')
+        df_lst = [price_df, dividends_df,splits_df]
+        output_df = reduce(lambda left, right: pd.merge(left, right, on='date', how='left'), df_lst)
+
         output_df.reset_index(inplace=True)
-        output_df.drop(columns=['level_0','level_1'], inplace=True)
+        output_df.drop(columns=['index'], inplace=True)
 
         return output_df
     
@@ -249,6 +252,7 @@ class ParseYahooPr(Parse_One_JSON_file_to_DataFrame):
             data.rename(columns={'date':'dateUnix','amount':'dividend'}, inplace=True)
             data['date'] = data['dateUnix'].apply(unix_to_regular_time)
             data['updated_dt'] = self.data_date
+            data.dropna(subset=['dateUnix'], axis=0, inplace=True)
             return data
         else:
             return pd.DataFrame()
@@ -336,7 +340,7 @@ if __name__  == "__main__":
     pattern3 = 'yahoo_yahoosc_*_2023-12-28.txt'
     pattern4 = 'yahoo_yahoosp_*_2023-12-28.txt'
     pattern5 = 'yahoo_yahooop_*_2023-12-25.txt'
-    pattern6 = 'yahoo_yahoopr_*_2024-01-01.txt'
+    pattern6 = 'yahoo_yahoopr_AAPL_2024-01-01.txt'
     obj = ParseManyJSON(pattern6)
     obj.run('csv')
     
