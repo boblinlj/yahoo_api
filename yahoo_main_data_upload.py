@@ -6,13 +6,17 @@ from job_mapping import option_mapping
 
 logger = get_logger()
 
-def main(options: Union[str,list], run_date = date.today().strftime('%Y-%m-%d')):
+def main(options: str, run_date = date.today().strftime('%Y-%m-%d')):
     
-    if type(options) != list:options = [options]
+    option_lst = options.split("+")
     
     logger.info(f"Start database uplading jobs for {','.join(options)} on {run_date}")
     
-    for each_option in options:
+    for each_option in option_lst:
+        if each_option not in option_mapping.keys():
+            logger.debug(f"Wrong option ({each_option}) used")
+            return None
+
         if option_mapping[each_option]['multi_table'] == True:
             for each_table in option_mapping[each_option]['table']:
                 logger.info(f"Uplading {each_table}...")

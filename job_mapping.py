@@ -49,7 +49,7 @@ option_mapping = {
                    'parse_object':'ParseYahooPr',
                    'description':'Download Yahoo prices',
                    'multi_table':False,
-                   'table':'yahoo_prices',
+                   'table':'yahoo_prices_staging',
                    'table_data_type_for_pd':{"dateUnix": np.float64,
                                                 "high": np.float64, 
                                                 "low":np.float64,
