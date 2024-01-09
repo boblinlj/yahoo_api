@@ -22,14 +22,14 @@ def main(options: str, run_date = date.today().strftime('%Y-%m-%d')):
                 logger.info(f"Uplading {each_table}...")
                 obj = WriteToDB(f"{each_option}_{each_table.replace('_','')}_{run_date}.csv",
                                 table=f"yahoo_{each_table}",
-                                chunk_size=1_000)
+                                insert_size=500)
                 obj.run()
         else:
             each_table = option_mapping[each_option]['table']
             logger.info(f"Uplading {each_table}...")
             obj = WriteToDB(f'{each_option}_{run_date}.csv',
                             table=f"{each_table}",
-                            chunk_size=1_000)
+                            insert_size=500)
             obj.run()
 
     
