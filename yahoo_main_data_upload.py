@@ -39,6 +39,6 @@ if __name__ == '__main__':
     run_date = sys.argv[2]
     
     if run_date == 'today':
-        run_date = date.today()
+        run_date = date.today().strftime('%Y-%m-%d')
     
     main(options=options, insert_size= 500, run_date=run_date)
