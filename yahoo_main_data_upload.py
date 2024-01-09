@@ -38,4 +38,7 @@ if __name__ == '__main__':
     options = sys.argv[1]
     run_date = sys.argv[2]
     
+    if run_date == 'today':
+        run_date = date.today()
+    
     main(options=options, insert_size= 500, run_date=run_date)

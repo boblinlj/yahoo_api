@@ -50,5 +50,8 @@ if __name__ == '__main__':
     options = sys.argv[1]
     run_date = sys.argv[2]
     n_work = sys.argv[3]
+    
+    if run_date == 'today':
+        run_date = date.today()
 
     main(options=options, run_date=run_date, n_work = int(n_work))
