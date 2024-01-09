@@ -1,12 +1,11 @@
 from _database_upload import WriteToDB
 from datetime import date
-from typing import Union
 from logger import get_logger
 from job_mapping import option_mapping
 
 logger = get_logger()
 
-def main(options: str, run_date = date.today().strftime('%Y-%m-%d')):
+def main(options: str, insert_size = 500, run_date = date.today().strftime('%Y-%m-%d')):
     
     option_lst = options.split("+")
     
@@ -22,14 +21,14 @@ def main(options: str, run_date = date.today().strftime('%Y-%m-%d')):
                 logger.info(f"Uplading {each_table}...")
                 obj = WriteToDB(f"{each_option}_{each_table.replace('_','')}_{run_date}.csv",
                                 table=f"yahoo_{each_table}",
-                                insert_size=500)
+                                insert_size=insert_size)
                 obj.run()
         else:
             each_table = option_mapping[each_option]['table']
             logger.info(f"Uplading {each_table}...")
             obj = WriteToDB(f'{each_option}_{run_date}.csv',
                             table=f"{each_table}",
-                            insert_size=500)
+                            insert_size=insert_size)
             obj.run()
 
     
@@ -39,4 +38,4 @@ if __name__ == '__main__':
     options = sys.argv[1]
     run_date = sys.argv[2]
     
-    main(options=options, run_date=run_date)
+    main(options=options, insert_size= 500, run_date=run_date)

@@ -109,6 +109,9 @@ class YahooOp(YahooAPI_to_JSON_file):
             if i == 0:
                 # check if stock is valid
                 logger.info(f"Extract url = {url}")
+                if results_json.get('error') is not None:
+                    logger.debug(f"unable to retrive {url} due to {results_json['error']['error']['description']}")
+                    return pd.DataFrame()
                 try:
                     expiration_dt_lst = results_json['optionChain']['result'][0]['expirationDates']
                 except IndexError:
