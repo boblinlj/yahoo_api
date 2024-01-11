@@ -1,11 +1,11 @@
 import pandas as pd
-from os import path
+import os
 from logger import get_logger
 
 logger = get_logger()
 
 def get_population(filename):
-    df = pd.read_csv(path.join('pop',filename),sep='\t', header=None)
+    df = pd.read_csv(os.path.join(os.getcwd(),'pop',filename),sep='\t', header=None)
     
     return df[0].str.upper().to_list()
 
