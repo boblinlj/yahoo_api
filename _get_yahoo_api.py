@@ -64,9 +64,9 @@ class YahooScreener(YahooAPI_to_JSON_file):
         else:
             logger.info(f"{self.stock} has {len(_temp_lst)} pages.")
             file_name = f"yahoo_yahoosc_{self.stock.replace('_','').lower()}_{self.run_date}.txt"
-            self.check_and_mkdir(os.path.join(os.path.getcwd(),'staging', self.run_date))
-            pd.DataFrame(_temp_lst).to_json(os.path.join(os.path.getcwd(),'staging', self.run_date, file_name),orient='records')
-            logger.info(f"{file_name} is saved in {os.path.join(os.path.getcwd(),'staging', self.run_date)}")
+            self.check_and_mkdir(os.path.join('python_prod', 'yahoo_api','staging', self.run_date))
+            pd.DataFrame(_temp_lst).to_json(os.path.join('python_prod', 'yahoo_api','staging', self.run_date, file_name),orient='records')
+            logger.info(f"{file_name} is saved in {os.path.join('python_prod', 'yahoo_api','staging', self.run_date)}")
 
 class YahooSp(YahooAPI_to_JSON_file):  
 
