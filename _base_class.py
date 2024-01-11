@@ -42,14 +42,14 @@ class YahooAPI_to_JSON_file(ABC):
             
     def load_to_staging(self) -> None:
              
-        self.check_and_mkdir(os.path.join('staging'))
-        self.check_and_mkdir(os.path.join('staging', self.run_date))
+        self.check_and_mkdir(os.path.join(os.getcwd(),'staging'))
+        self.check_and_mkdir(os.path.join(os.getcwd(),'staging', self.run_date))
         
         url = self.yahoo_url()
 
         file_name = f'yahoo_{self.name}_{self.stock}_{self.run_date}.txt'
         
-        with open(os.path.join('staging',self.run_date, file_name), 'w', newline='') as f:
+        with open(os.path.join(os.getcwd(), 'staging',self.run_date, file_name), 'w', newline='') as f:
             f.write(self.read_yahoo_api(url))
             
 
