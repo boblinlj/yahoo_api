@@ -40,7 +40,7 @@ def main(options: Union[str,list], run_date = date.today(), n_work=30) -> None:
         parallel_process(arr, _each_stock_run, use_kwargs=True, n_jobs=n_work, use_tqdm=True)
 
         # check number of files entered
-        file_pattern = f'staging/{run_date}/yahoo_{each_option}_*_{run_date}.txt'
+        file_pattern = f'python_prod/yahoo_api/staging/{run_date}/yahoo_{each_option}_*_{run_date}.txt'
         number_of_file = len(glob.glob(file_pattern))
         logger.info(f"There are {number_of_file} files entered.")
         

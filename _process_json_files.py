@@ -274,7 +274,7 @@ class ParseManyJSON():
 
     def loop_folder(self) -> list():
         _temp_df_lst = []
-        for file in tqdm(glob.glob(os.path.join(os.getcwd(), 'staging', self.data_date, self.file_name_pattern))[:],
+        for file in tqdm(glob.glob(os.path.join('python_prod', 'yahoo_api', 'staging', self.data_date, self.file_name_pattern))[:],
                          disable = self.disable_tqdm,
                          desc = f'{self.parse_option}',
                          ncols=80):
@@ -297,26 +297,26 @@ class ParseManyJSON():
         _df_list = split_dataframe(df, chunk_size=500_000)
         file_counter = 1
         
-        if not os.path.exists(os.path.join(os.getcwd(),'final', f'{self.parse_option_file_name}_{self.data_date}.csv')):
-            os.mkdir(os.path.join(os.getcwd(),'final', f'{self.parse_option_file_name}_{self.data_date}.csv'))
+        if not os.path.exists(os.path.join('python_prod', 'yahoo_api','final', f'{self.parse_option_file_name}_{self.data_date}.csv')):
+            os.mkdir(os.path.join('python_prod', 'yahoo_api','final', f'{self.parse_option_file_name}_{self.data_date}.csv'))
         
         for _ in tqdm(_df_list,
                       disable = self.disable_tqdm,
                       desc = f'Write Files',
                       ncols=80):
             if file_type == 'csv':
-                _.to_csv(os.path.join(os.getcwd(),'final', f'{self.parse_option_file_name}_{self.data_date}.csv', f'{self.parse_option_file_name}_{self.data_date}_{file_counter}.csv'))
-                logger.info(f"{self.parse_option_file_name}_{self.data_date}_{file_counter}.csv is created in {os.path.join(os.getcwd(),'final', f'{self.parse_option_file_name}_{self.data_date}.csv')}")
+                _.to_csv(os.path.join('python_prod', 'yahoo_api','final', f'{self.parse_option_file_name}_{self.data_date}.csv', f'{self.parse_option_file_name}_{self.data_date}_{file_counter}.csv'))
+                logger.info(f"{self.parse_option_file_name}_{self.data_date}_{file_counter}.csv is created in {os.path.join('python_prod', 'yahoo_api','final', f'{self.parse_option_file_name}_{self.data_date}.csv')}")
             elif file_type == 'parquet':
                 # need to replace nan to '' to avoid errors in export
                 _.replace(to_replace={'NaN':''}, inplace=True)
-                _.to_parquet(os.path.join(os.getcwd(),'final', f'{self.parse_option_file_name}_{self.data_date}.parquet', f'{self.parse_option_file_name}_{self.data_date}_{file_counter}.parquet'))
-                logger.info(f"{self.parse_option_file_name}_{self.data_date}_{file_counter}.csv is created in {os.path.join(os.getcwd(),'final', f'{self.parse_option_file_name}_{self.data_date}.csv')}")
+                _.to_parquet(os.path.join('python_prod', 'yahoo_api','final', f'{self.parse_option_file_name}_{self.data_date}.parquet', f'{self.parse_option_file_name}_{self.data_date}_{file_counter}.parquet'))
+                logger.info(f"{self.parse_option_file_name}_{self.data_date}_{file_counter}.csv is created in {os.path.join('python_prod', 'yahoo_api','final', f'{self.parse_option_file_name}_{self.data_date}.csv')}")
             
             file_counter += 1
     
     def delete_staging_file(self) -> None:
-        path = os.path.join(os.getcwd(),'staging',self.data_date)
+        path = os.path.join('python_prod', 'yahoo_api','staging',self.data_date)
         _no_deleted = 0
         for file in glob.glob(os.path.join(path,self.file_name_pattern))[:]:
             if os.path.isfile(file):

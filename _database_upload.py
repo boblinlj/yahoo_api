@@ -33,13 +33,13 @@ class WriteToDB():
         self.option = self.file_name_pattern.split('_')[0]
 
     def create_dataframe(self) -> pd.DataFrame:
-        csv_files = glob.glob(os.path.join(os.getcwd(),
+        csv_files = glob.glob(os.path.join('python_prod', 'yahoo_api',
             'final', self.file_name_pattern, '*.csv'))[:]
         logger.info(f"Program will read the following files: {csv_files}")
 
         if len(csv_files) == 0:
             logger.info(
-                f"""No data in "{os.path.join(os.getcwd(),'final', self.file_name_pattern)}" """)
+                f"""No data in "{os.path.join('python_prod', 'yahoo_api','final', self.file_name_pattern)}" """)
             return pd.DataFrame()
         else:
             df_list = [pd.read_csv(file, dtype=option_mapping[self.option].get(
@@ -129,7 +129,7 @@ class WriteToDB():
     def create_table(self) -> bool:
         ddl_file = f'create_{self.table}.sql'
         with self.create_connection().connect() as c:
-            path = os.path.join(os.getcwd(),'ddl', ddl_file)
+            path = os.path.join('python_prod', 'yahoo_api','ddl', ddl_file)
             if not os.path.exists(path):
                 logger.info(
                     f"New table:{self.table} cannot be created due to missing sql file in the ddl folder")
